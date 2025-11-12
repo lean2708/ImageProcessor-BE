@@ -1,0 +1,45 @@
+INFO:root:Writing to file input_images/ac13355c-16c9-4133-aeb3-d34a7044a75c.jpeg
+DEBUG:PIL.PngImagePlugin:STREAM b'IHDR' 16 13
+DEBUG:PIL.PngImagePlugin:STREAM b'IDAT' 41 65536
+INFO:root:Image file output_images/c1cf3bdb-fa9a-4697-83c9-15c1b1967024.png\ac13355c-16c9-4133-aeb3-d34a7044a75c_contrast_1762963365.png being read
+INFO:root:Processed image saved as ac13355c-16c9-4133-aeb3-d34a7044a75c_contrast_1762963365.png
+INFO:werkzeug:127.0.0.1 - - [12/Nov/2025 23:02:46] "POST /api/contrast_stretching HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [12/Nov/2025 23:02:47] "OPTIONS /api/histogram_equalization HTTP/1.1" 200 -
+INFO:root:Writing to file input_images/9b429d8a-2eae-422e-b1bd-61d45382d551.jpeg
+DEBUG:PIL.PngImagePlugin:STREAM b'IHDR' 16 13
+DEBUG:PIL.PngImagePlugin:STREAM b'IDAT' 41 65536
+INFO:root:Image file output_images/eeac61ae-f84a-4abb-b34b-b4c65e55ba10.png\9b429d8a-2eae-422e-b1bd-61d45382d551_1762963368.png being read
+INFO:root:Processed image saved as 9b429d8a-2eae-422e-b1bd-61d45382d551_1762963368.png
+INFO:werkzeug:127.0.0.1 - - [12/Nov/2025 23:02:49] "POST /api/histogram_equalization HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [12/Nov/2025 23:02:50] "OPTIONS /api/log_compression HTTP/1.1" 200 -
+INFO:root:Writing to file input_images/e917e1a4-8953-4ed4-9ffd-6899630d5361.jpeg
+DEBUG:PIL.PngImagePlugin:STREAM b'IHDR' 16 13
+DEBUG:PIL.PngImagePlugin:STREAM b'IDAT' 41 65536
+ERROR:server:Exception on /api/log_compression [POST]
+Traceback (most recent call last):
+  File "C:\Users\PC\miniconda3\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\PC\miniconda3\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\PC\miniconda3\Lib\site-packages\flask_cors\extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ~^^^^^^^^^^^^^^^^^
+  File "C:\Users\PC\miniconda3\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\PC\miniconda3\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "D:\WorkSpace\Code\XLA\ImageProcessor-BE\server.py", line 288, in log_compression_processing
+    processed_image = log_compression(input_png_path, output_full_path)
+  File "D:\WorkSpace\Code\XLA\ImageProcessor-BE\image_module\log_compression.py", line 50, in log_compression
+    a2 = str(encode_image(output_path))
+             ~~~~~~~~~~~~^^^^^^^^^^^^^
+TypeError: 'module' object is not callable
+INFO:werkzeug:127.0.0.1 - - [12/Nov/2025 23:02:51] "[35m[1mPOST /api/log_compression HTTP/1.1[0m" 500 -
+INFO:werkzeug:127.0.0.1 - - [12/Nov/2025 23:02:52] "OPTIONS /api/reverse_video HTTP/1.1" 200 -
+INFO:root:Writing to file input_images/8b33286e-99d5-43e9-a74b-c549cf029b42.jpeg
+DEBUG:PIL.PngImagePlugin:STREAM b'IHDR' 16 13
+DEBUG:PIL.PngImagePlugin:STREAM b'IDAT' 41 65536
+INFO:root:Image file output_images/64f429dc-0ae2-488a-91ed-4b814c3eb5cc.png\8b33286e-99d5-43e9-a74b-c549cf029b42_reverse_1762963373.png being read
+INFO:root:Processed image saved as 8b33286e-99d5-43e9-a74b-c549cf029b42_reverse_1762963373.png
+INFO:werkzeug:127.0.0.1 - - [12/Nov/2025 23:02:53] "POST /api/reverse_video HTTP/1.1" 200 -

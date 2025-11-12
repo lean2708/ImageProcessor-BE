@@ -11,7 +11,11 @@ import os
 import math
 from skimage import util
 import PIL
-from image_module import decode_image, log_compression, strip_image
+# FIX: Đã sửa lại các import này để trỏ đúng vào hàm trong file,
+# thay vì import module
+from image_module.decode_image import decode_image
+from image_module.log_compression import log_compression
+from image_module.strip_image import strip_image
 from image_module.contrast_stretching import contrast_stretching
 from image_module.histogram_equalization import histogram_equalization
 from image_module.reverse_video import reverse_video
@@ -30,6 +34,8 @@ connect("mongodb://localhost:27017/image_app")
 
 
 INPUT_FOLDER = "input_images/"
+OUTPUT_FOLDER = "output_images/"  # FIX: Thêm folder output
+
 
 @app.route("/api/user_exists/<username>", methods=["GET"])
 def user_exists(username):
@@ -104,7 +110,6 @@ def image_post():
     return jsonify(u_vals), 200
 
 
-
 @app.route("/api/<username>", methods=["GET"])
 def get_user(username):
     """
@@ -148,32 +153,37 @@ def histogram_equalization_processing():
     stripped_image = strip_image(image, file_type)
 
     suffix = "." + file_type
-    suffix_id2 = ".png"
-    # id1 is where the original file will be stored
-    filename1 = str(uuid.uuid4())
-    id1_temp = filename1 + suffix
-    # id2 is where the processed file will be stored
-    filename2 = str(uuid.uuid4())
-    id2 = filename2 + suffix_id2
+
+    # FIX: Tạo đường dẫn file rõ ràng dùng os.path.join
+    # Tạo tên file cơ sở (base filenames)
+    input_base_name = str(uuid.uuid4())
+    output_base_name = str(uuid.uuid4())
+
+    # Đường dẫn cho file input tạm (ví dụ: input_images/uuid1.jpg)
+    input_temp_path = os.path.join(INPUT_FOLDER, input_base_name + suffix)
+    # Đường dẫn cho file input đã chuẩn hóa PNG (ví dụ: input_images/uuid1.png)
+    input_png_path = os.path.join(INPUT_FOLDER, input_base_name + ".png")
+
+    # Tên file và đường dẫn đầy đủ cho file output
+    output_filename = output_base_name + ".png"
+    output_full_path = os.path.join(OUTPUT_FOLDER, output_filename)
 
     start_time = datetime.datetime.now()
-    decode_image(stripped_image, id1_temp)
-    id1 = filename1 + ".png"
-    im = Image.open(id1_temp)
-    im.save(id1)
-    # processed_image dictionary will be returned
-    processed_image = histogram_equalization(id1, id2)
-    # histogram_original = histogram(id1)
-    # histogram_processed = histogram(id2)
+    decode_image(stripped_image, input_temp_path)
+    im = Image.open(input_temp_path)
+    im.save(input_png_path)
+
+    # Gọi hàm xử lý với đường dẫn đầy đủ
+    processed_image = histogram_equalization(input_png_path, output_full_path)
+    
     end_time = datetime.datetime.now()
     process_time = str(end_time - start_time)
 
     if username != 'Visitor':
-        num_hist = add_image_hist(username, id2, datetime.datetime.now())
+        # FIX: Chỉ lưu tên file (output_filename) vào DB
+        num_hist = add_image_hist(username, output_filename, datetime.datetime.now())
         processed_image["process_count"] = num_hist
 
-    # processed_image["histogram_original"] = histogram_original
-    # processed_image["histogram_processed"] = histogram_processed
     processed_image["process_time"] = process_time
 
     print("returning processed image")
@@ -184,8 +194,6 @@ def histogram_equalization_processing():
 def contrast_stretching_processing():
     """
     Get the processed image with contrast-stretching
-    :param id1: uuid of original image
-    :param id2: uuid of processed image
     :return: json dict of image
     :rtype: Request
     """
@@ -206,30 +214,33 @@ def contrast_stretching_processing():
     stripped_string = strip_image(image_new, file_type)
 
     suffix = "." + file_type
-    suffix_id2 = ".png"
-    id1_ori = str(uuid.uuid4())
-    id1_temp = id1_ori + suffix
-    id2 = str(uuid.uuid4())
-    id2 = id2 + ".png"
+
+    # FIX: Tạo đường dẫn file rõ ràng dùng os.path.join
+    input_base_name = str(uuid.uuid4())
+    output_base_name = str(uuid.uuid4())
+
+    input_temp_path = os.path.join(INPUT_FOLDER, input_base_name + suffix)
+    input_png_path = os.path.join(INPUT_FOLDER, input_base_name + ".png")
+
+    output_filename = output_base_name + ".png"
+    output_full_path = os.path.join(OUTPUT_FOLDER, output_filename)
 
     start_time = datetime.datetime.now()
-    decode_image(stripped_string, id1_temp)
-    id1 = id1_ori + ".png"
-    im = Image.open(id1_temp)
-    im.save(id1)
-    processed_image = contrast_stretching(id1, id2)
-    # histogram_original = histogram(id1)
-    # histogram_processed = histogram(id2)
+    decode_image(stripped_string, input_temp_path)
+    im = Image.open(input_temp_path)
+    im.save(input_png_path)
+    
+    processed_image = contrast_stretching(input_png_path, output_full_path)
+    
     end_time = datetime.datetime.now()
     process_time = str(end_time - start_time)
 
     if username != 'Visitor':
+        # FIX: Chỉ lưu tên file (output_filename) vào DB
         num_contrast = add_image_contrast(username,
-                                          id2, datetime.datetime.now())
+                                          output_filename, datetime.datetime.now())
         processed_image["process_count"] = num_contrast
 
-    # processed_image["histogram_original"] = histogram_original
-    # processed_image["histogram_processed"] = histogram_processed
     processed_image["process_time"] = process_time
     return jsonify(processed_image), 200
 
@@ -238,8 +249,6 @@ def contrast_stretching_processing():
 def log_compression_processing():
     """
     Get the processed image with log_compression
-    :param id1: uuid of original image
-    :param id2: uuid of processed image
     :return: json dict of image
     :rtype: Request
     """
@@ -259,32 +268,33 @@ def log_compression_processing():
         return jsonify(err), 400
     stripped_string = strip_image(image_new, file_type)
 
-    id1_ori = str(uuid.uuid4())
     suffix = "." + file_type
-    suffix_id2 = ".png"
-    id1_temp = id1_ori + suffix
-    id2 = str(uuid.uuid4())
-    id2 = id2 + suffix_id2
+    
+    # FIX: Tạo đường dẫn file rõ ràng dùng os.path.join
+    input_base_name = str(uuid.uuid4())
+    output_base_name = str(uuid.uuid4())
+
+    input_temp_path = os.path.join(INPUT_FOLDER, input_base_name + suffix)
+    input_png_path = os.path.join(INPUT_FOLDER, input_base_name + ".png")
+
+    output_filename = output_base_name + ".png"
+    output_full_path = os.path.join(OUTPUT_FOLDER, output_filename)
 
     start_time = datetime.datetime.now()
-    decode_image(stripped_string, id1_temp)
-    id1 = id1_ori + ".png"
-    im = Image.open(id1_temp)
-    im.save(id1)
-    processed_image = log_compression(id1, id2)
+    decode_image(stripped_string, input_temp_path)
+    im = Image.open(input_temp_path)
+    im.save(input_png_path)
+    
+    processed_image = log_compression(input_png_path, output_full_path)
+    
     end_time = datetime.datetime.now()
-    # histogram_original = histogram(id1)
-    # histogram_processed = histogram(id2)
-    end_time = datetime.datetime.now()
-
     process_time = str(end_time - start_time)
 
     if username != 'Visitor':
-        num_log = add_image_log(username, id2, datetime.datetime.now())
+        # FIX: Chỉ lưu tên file (output_filename) vào DB
+        num_log = add_image_log(username, output_filename, datetime.datetime.now())
         processed_image["process_count"] = num_log
 
-    # processed_image["histogram_original"] = histogram_original
-    # processed_image["histogram_processed"] = histogram_processed
     processed_image["process_time"] = process_time
     return jsonify(processed_image), 200
 
@@ -293,8 +303,6 @@ def log_compression_processing():
 def reverse_video_processing():
     """
     Get the processed image with reverse_video
-    :param id1: uuid of original image
-    :param id2: uuid of processed image
     :return: json dict of image
     :rtype: Request
     """
@@ -314,32 +322,41 @@ def reverse_video_processing():
         return jsonify(err), 400
     stripped_string = strip_image(image_new, file_type)
 
-    id1_origin = str(uuid.uuid4())
     suffix = "." + file_type
-    id1_temp = id1_origin + suffix
-    id2 = str(uuid.uuid4())
-    id2 = id2 + ".png"
 
+    # FIX: Tạo đường dẫn file rõ ràng dùng os.path.join
+    input_base_name = str(uuid.uuid4())
+    output_base_name = str(uuid.uuid4())
+
+    input_temp_path = os.path.join(INPUT_FOLDER, input_base_name + suffix)
+    input_png_path = os.path.join(INPUT_FOLDER, input_base_name + ".png")
+
+    output_filename = output_base_name + ".png"
+    output_full_path = os.path.join(OUTPUT_FOLDER, output_filename)
+    
     start_time = datetime.datetime.now()
-    decode_image(stripped_string, id1_temp)
-    id1 = id1_origin + ".png"
-    im = Image.open(id1_temp)
-    im.save(id1)
-    processed_image = reverse_video(id1, id2)
-    # histogram_original = histogram(id1)
-    # histogram_processed = histogram(id2)
+    decode_image(stripped_string, input_temp_path)
+    im = Image.open(input_temp_path)
+    im.save(input_png_path)
+    
+    processed_image = reverse_video(input_png_path, output_full_path)
+    
     end_time = datetime.datetime.now()
     process_time = str(end_time - start_time)
 
     if username != 'Visitor':
-        num_reverse = add_image_reverse(username, id2, datetime.datetime.now())
+        # FIX: Chỉ lưu tên file (output_filename) vào DB
+        num_reverse = add_image_reverse(username, output_filename, datetime.datetime.now())
         processed_image["process_count"] = num_reverse
 
-    # processed_image["histogram_original"] = histogram_original
-    # processed_image["histogram_processed"] = histogram_processed
     processed_image["process_time"] = process_time
     return jsonify(processed_image), 200
 
 
 if __name__ == "__main__":
+    # FIX: Đảm bảo các thư mục tồn tại khi chạy
+    if not os.path.exists(INPUT_FOLDER):
+        os.makedirs(INPUT_FOLDER)
+    if not os.path.exists(OUTPUT_FOLDER):
+        os.makedirs(OUTPUT_FOLDER)
     app.run()
