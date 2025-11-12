@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.env
+*.egg-info/
+*.egg
+*.log
+
+# Virtual environment
+env/
+venv/
+.venv/
+*.conda
+*.virtualenv
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Flask / Django / general Python logs
+*.log
+
+# Output images (không push ảnh lớn)
+output_images/
+input_images/
+
+# Database / secrets
+*.sqlite3
+*.db
+*.mongodb
+*.mongo
+*.pem
+*.key
+
+# IDE files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Others
+*.bak
+*.swp
