@@ -13,8 +13,11 @@ from skimage import util
 import PIL
 # FIX: Đã sửa lại các import này để trỏ đúng vào hàm trong file,
 # thay vì import module
+from image_module.canny_edge import canny_edge
 from image_module.decode_image import decode_image
+from image_module.laplacian_edge import laplacian_edge
 from image_module.log_compression import log_compression
+from image_module.sobel_edge import sobel_edge
 from image_module.strip_image import strip_image
 from image_module.contrast_stretching import contrast_stretching
 from image_module.histogram_equalization import histogram_equalization
@@ -30,7 +33,6 @@ import time
 
 app = Flask(__name__)
 CORS(app)
-connect("mongodb://localhost:27017/image_app")
 
 
 INPUT_FOLDER = "input_images/"
@@ -353,10 +355,176 @@ def reverse_video_processing():
     return jsonify(processed_image), 200
 
 
+
+
+@app.route("/api/canny_edge", methods=["POST"])
+def canny_edge_processing():
+    """
+    Get the processed image with Canny Edge Detection
+    (Không lưu vào DB)
+    """
+    r = request.get_json()
+    try:
+        username = r["username"]  # Vẫn nhận username, nhưng không dùng
+        image = r["image"]
+        file_type = r["file_type"]
+        assert type(image) == str
+    except KeyError as e:
+        logging.warning("Incorrect JSON input: {}".format(e))
+        err = {"error": "Incorrect JSON input"}
+        return jsonify(err), 400
+    except AssertionError as e:
+        logging.warning("Incorrect image type given: {}".format(e))
+        err = {"error": "Incorrect image type given"}
+        return jsonify(err), 400
+    stripped_image = strip_image(image, file_type)
+
+    suffix = "." + file_type
+    input_base_name = str(uuid.uuid4())
+    output_base_name = str(uuid.uuid4())
+    input_temp_path = os.path.join(INPUT_FOLDER, input_base_name + suffix)
+    input_png_path = os.path.join(INPUT_FOLDER, input_base_name + ".png")
+    output_filename = output_base_name + ".png"
+    output_full_path = os.path.join(OUTPUT_FOLDER, output_filename)
+
+    start_time = datetime.datetime.now()
+    decode_image(stripped_image, input_temp_path)
+    im = Image.open(input_temp_path)
+    im.save(input_png_path)
+
+    # Gọi hàm xử lý Canny
+    processed_image = canny_edge(input_png_path, output_full_path)
+    
+    end_time = datetime.datetime.now()
+    process_time = str(end_time - start_time)
+
+    # Bỏ qua việc lưu vào DB
+
+    processed_image["process_time"] = process_time
+    return jsonify(processed_image), 200
+
+
+
+@app.route("/api/laplacian_edge", methods=["POST"])
+def laplacian_edge_processing():
+    """
+    Get the processed image with Laplacian Edge Detection
+    (Không lưu vào DB)
+    """
+    r = request.get_json()
+    try:
+        username = r["username"]
+        image = r["image"]
+        file_type = r["file_type"]
+        assert type(image) == str
+    except KeyError as e:
+        logging.warning("Incorrect JSON input: {}".format(e))
+        err = {"error": "Incorrect JSON input"}
+        return jsonify(err), 400
+    except AssertionError as e:
+        logging.warning("Incorrect image type given: {}".format(e))
+        err = {"error": "Incorrect image type given"}
+        return jsonify(err), 400
+    stripped_image = strip_image(image, file_type)
+
+    suffix = "." + file_type
+    input_base_name = str(uuid.uuid4())
+    output_base_name = str(uuid.uuid4())
+    input_temp_path = os.path.join(INPUT_FOLDER, input_base_name + suffix)
+    input_png_path = os.path.join(INPUT_FOLDER, input_base_name + ".png")
+    output_filename = output_base_name + ".png"
+    output_full_path = os.path.join(OUTPUT_FOLDER, output_filename)
+
+    start_time = datetime.datetime.now()
+    decode_image(stripped_image, input_temp_path)
+    im = Image.open(input_temp_path)
+    im.save(input_png_path)
+
+    # Gọi hàm xử lý Laplacian
+    processed_image = laplacian_edge(input_png_path, output_full_path)
+    
+    end_time = datetime.datetime.now()
+    process_time = str(end_time - start_time)
+
+    # Bỏ qua việc lưu vào DB
+    
+    processed_image["process_time"] = process_time
+    return jsonify(processed_image), 200
+
+
+
+
+
+@app.route("/api/sobel_edge", methods=["POST"])
+def sobel_edge_processing():
+    """
+    Get the processed image with Sobel Edge Detection
+    (Không lưu vào DB)
+    """
+    r = request.get_json()
+    try:
+        username = r["username"]
+        image = r["image"]
+        file_type = r["file_type"]
+        assert type(image) == str
+    except KeyError as e:
+        logging.warning("Incorrect JSON input: {}".format(e))
+        err = {"error": "Incorrect JSON input"}
+        return jsonify(err), 400
+    except AssertionError as e:
+        logging.warning("Incorrect image type given: {}".format(e))
+        err = {"error": "Incorrect image type given"}
+        return jsonify(err), 400
+    stripped_image = strip_image(image, file_type)
+
+    suffix = "." + file_type
+    input_base_name = str(uuid.uuid4())
+    output_base_name = str(uuid.uuid4())
+    input_temp_path = os.path.join(INPUT_FOLDER, input_base_name + suffix)
+    input_png_path = os.path.join(INPUT_FOLDER, input_base_name + ".png")
+    output_filename = output_base_name + ".png"
+    output_full_path = os.path.join(OUTPUT_FOLDER, output_filename)
+
+    start_time = datetime.datetime.now()
+    decode_image(stripped_image, input_temp_path)
+    im = Image.open(input_temp_path)
+    im.save(input_png_path)
+
+    # Gọi hàm xử lý Sobel
+    processed_image = sobel_edge(input_png_path, output_full_path)
+    
+    end_time = datetime.datetime.now()
+    process_time = str(end_time - start_time)
+
+    # Bỏ qua việc lưu vào DB
+
+    processed_image["process_time"] = process_time
+    return jsonify(processed_image), 200
+
+
+
+
+
 if __name__ == "__main__":
-    # FIX: Đảm bảo các thư mục tồn tại khi chạy
+    
+    #  Đảm bảo các thư mục tồn tại khi chạy
     if not os.path.exists(INPUT_FOLDER):
         os.makedirs(INPUT_FOLDER)
     if not os.path.exists(OUTPUT_FOLDER):
         os.makedirs(OUTPUT_FOLDER)
+    
+    print("--- CHUẨN BỊ CHẠY SERVER ---")
+    
+    try:
+        print("--- Đang kết nối tới MongoDB... ---")
+        connect("mongodb://localhost:27017/image_app")
+        print("--- Kết nối MongoDB THÀNH CÔNG ---")
+    except Exception as e:
+        print(f"!!!!!!!! LỖI KẾT NỐI MONGODB !!!!!!!!")
+        print(f"Lỗi: {e}")
+        print("Vui lòng đảm bảo MongoDB đang chạy.")
+        exit() 
+
+    print("--- Bật DEBUG MODE = ON (để xem lỗi) ---")
+    print("--- Chạy trên PORT 5000 ---")
     app.run()
