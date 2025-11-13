@@ -19,6 +19,9 @@ from image_module.strip_image import strip_image
 from image_module.contrast_stretching import contrast_stretching
 from image_module.histogram_equalization import histogram_equalization
 from image_module.reverse_video import reverse_video
+from image_module.temperature import apply_temperature
+from image_module.laplacian import apply_laplacian
+from image_module.box_filter import apply_box_filter
 from user import create_user, already_user, add_uploadimage, add_image_hist
 from user import add_image_contrast, add_image_log, add_image_reverse
 from models import User
@@ -352,6 +355,115 @@ def reverse_video_processing():
     processed_image["process_time"] = process_time
     return jsonify(processed_image), 200
 
+
+# New endpoints for temperature, laplacian, and box filter
+
+@app.route("/api/temperature", methods=["POST"])
+def temperature_processing():
+    """Thay đổi nhiệt độ màu (ấm/lạnh)"""
+    r = request.get_json()
+    try:
+        username = r["username"]
+        image_new = r["image"]
+        file_type = r["file_type"]
+        warm = r.get("warm", True)
+        intensity = int(r.get("intensity", 30))
+        assert type(image_new) is str
+    except KeyError as e:
+        return jsonify({"error": f"Thiếu key trong JSON: {e}"}), 400
+
+    stripped_string = strip_image(image_new, file_type)
+    suffix = "." + file_type
+    input_base_name = str(uuid.uuid4())
+    output_base_name = str(uuid.uuid4())
+
+    input_temp_path = os.path.join(INPUT_FOLDER, input_base_name + suffix)
+    output_filename = output_base_name + ".png"
+    output_full_path = os.path.join(OUTPUT_FOLDER, output_filename)
+
+    start_time = datetime.datetime.now()
+    decode_image(stripped_string, input_temp_path)
+    apply_temperature(input_temp_path, intensity, warm, output_full_path)
+    end_time = datetime.datetime.now()
+
+    process_time = str(end_time - start_time)
+    return jsonify({
+        "message": "Xử lý nhiệt độ màu thành công!",
+        "file_name": output_filename,
+        "output_path": output_full_path,
+        "process_time": process_time
+    }), 200
+
+
+@app.route("/api/laplacian", methods=["POST"])
+def laplacian_processing():
+    """Làm sắc nét ảnh bằng Laplacian"""
+    r = request.get_json()
+    try:
+        username = r["username"]
+        image_new = r["image"]
+        file_type = r["file_type"]
+        assert type(image_new) is str
+    except KeyError as e:
+        return jsonify({"error": f"Thiếu key trong JSON: {e}"}), 400
+
+    stripped_string = strip_image(image_new, file_type)
+    suffix = "." + file_type
+    input_base_name = str(uuid.uuid4())
+    output_base_name = str(uuid.uuid4())
+
+    input_temp_path = os.path.join(INPUT_FOLDER, input_base_name + suffix)
+    output_filename = output_base_name + ".png"
+    output_full_path = os.path.join(OUTPUT_FOLDER, output_filename)
+
+    start_time = datetime.datetime.now()
+    decode_image(stripped_string, input_temp_path)
+    apply_laplacian(input_temp_path, output_full_path)
+    end_time = datetime.datetime.now()
+
+    process_time = str(end_time - start_time)
+    return jsonify({
+        "message": "Làm sắc nét ảnh (Laplacian) thành công!",
+        "file_name": output_filename,
+        "output_path": output_full_path,
+        "process_time": process_time
+    }), 200
+
+
+@app.route("/api/box_filter", methods=["POST"])
+def boxfilter_processing():
+    """Làm mờ ảnh bằng Box Filter"""
+    r = request.get_json()
+    try:
+        username = r["username"]
+        image_new = r["image"]
+        file_type = r["file_type"]
+        ksize = int(r.get("ksize", 5))
+        assert type(image_new) is str
+    except KeyError as e:
+        return jsonify({"error": f"Thiếu key trong JSON: {e}"}), 400
+
+    stripped_string = strip_image(image_new, file_type)
+    suffix = "." + file_type
+    input_base_name = str(uuid.uuid4())
+    output_base_name = str(uuid.uuid4())
+
+    input_temp_path = os.path.join(INPUT_FOLDER, input_base_name + suffix)
+    output_filename = output_base_name + ".png"
+    output_full_path = os.path.join(OUTPUT_FOLDER, output_filename)
+
+    start_time = datetime.datetime.now()
+    decode_image(stripped_string, input_temp_path)
+    apply_box_filter(input_temp_path, ksize, output_full_path)
+    end_time = datetime.datetime.now()
+
+    process_time = str(end_time - start_time)
+    return jsonify({
+        "message": "Làm mờ ảnh (Box Filter) thành công!",
+        "file_name": output_filename,
+        "output_path": output_full_path,
+        "process_time": process_time
+    }), 200
 
 if __name__ == "__main__":
     # FIX: Đảm bảo các thư mục tồn tại khi chạy
