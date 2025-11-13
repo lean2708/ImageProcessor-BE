@@ -173,8 +173,14 @@ def histogram_equalization_processing():
 
     start_time = datetime.datetime.now()
     decode_image(stripped_image, input_temp_path)
-    im = Image.open(input_temp_path)
-    im.save(input_png_path)
+    
+    try:
+        im = Image.open(input_temp_path)
+        im.save(input_png_path)
+    except PIL.UnidentifiedImageError:
+        return jsonify({"error": "Không thể xác định định dạng ảnh."}), 400
+    except Exception as e:
+        return jsonify({"error": f"Lỗi xử lý ảnh đầu vào: {e}"}), 500
 
     # Gọi hàm xử lý với đường dẫn đầy đủ
     processed_image = histogram_equalization(input_png_path, output_full_path)
@@ -230,8 +236,14 @@ def contrast_stretching_processing():
 
     start_time = datetime.datetime.now()
     decode_image(stripped_string, input_temp_path)
-    im = Image.open(input_temp_path)
-    im.save(input_png_path)
+    
+    try:
+        im = Image.open(input_temp_path)
+        im.save(input_png_path)
+    except PIL.UnidentifiedImageError:
+        return jsonify({"error": "Không thể xác định định dạng ảnh."}), 400
+    except Exception as e:
+        return jsonify({"error": f"Lỗi xử lý ảnh đầu vào: {e}"}), 500
     
     processed_image = contrast_stretching(input_png_path, output_full_path)
     
@@ -285,8 +297,14 @@ def log_compression_processing():
 
     start_time = datetime.datetime.now()
     decode_image(stripped_string, input_temp_path)
-    im = Image.open(input_temp_path)
-    im.save(input_png_path)
+    
+    try:
+        im = Image.open(input_temp_path)
+        im.save(input_png_path)
+    except PIL.UnidentifiedImageError:
+        return jsonify({"error": "Không thể xác định định dạng ảnh."}), 400
+    except Exception as e:
+        return jsonify({"error": f"Lỗi xử lý ảnh đầu vào: {e}"}), 500
     
     processed_image = log_compression(input_png_path, output_full_path)
     
@@ -339,8 +357,14 @@ def reverse_video_processing():
     
     start_time = datetime.datetime.now()
     decode_image(stripped_string, input_temp_path)
-    im = Image.open(input_temp_path)
-    im.save(input_png_path)
+    
+    try:
+        im = Image.open(input_temp_path)
+        im.save(input_png_path)
+    except PIL.UnidentifiedImageError:
+        return jsonify({"error": "Không thể xác định định dạng ảnh."}), 400
+    except Exception as e:
+        return jsonify({"error": f"Lỗi xử lý ảnh đầu vào: {e}"}), 500
     
     processed_image = reverse_video(input_png_path, output_full_path)
     
@@ -378,12 +402,35 @@ def temperature_processing():
     output_base_name = str(uuid.uuid4())
 
     input_temp_path = os.path.join(INPUT_FOLDER, input_base_name + suffix)
+    
+    # +++ SỬA LỖI: Thêm đường dẫn PNG chuẩn hóa +++
+    input_png_path = os.path.join(INPUT_FOLDER, input_base_name + ".png")
+    
     output_filename = output_base_name + ".png"
     output_full_path = os.path.join(OUTPUT_FOLDER, output_filename)
 
     start_time = datetime.datetime.now()
     decode_image(stripped_string, input_temp_path)
-    apply_temperature(input_temp_path, intensity, warm, output_full_path)
+
+    # +++ SỬA LỖI: Thêm logic mở và lưu lại bằng PIL để chuẩn hóa +++
+    try:
+        im = Image.open(input_temp_path)
+        im.save(input_png_path)
+    except PIL.UnidentifiedImageError:
+        return jsonify({"error": "Không thể xác định định dạng ảnh."}), 400
+    except Exception as e:
+        # Ghi log lỗi để debug
+        logging.error(f"Lỗi khi chuẩn hóa ảnh: {e}")
+        return jsonify({"error": f"Lỗi xử lý ảnh đầu vào: {e}"}), 500
+
+    # +++ SỬA LỖI: Gọi hàm xử lý trên file PNG đã chuẩn hóa +++
+    try:
+        apply_temperature(input_png_path, intensity, warm, output_full_path)
+    except ValueError as e:
+        # Bắt lỗi từ hàm (ví dụ: cv2.imread trả về None)
+        logging.error(f"Lỗi từ apply_temperature: {e}")
+        return jsonify({"error": f"Không thể xử lý ảnh: {e}"}), 500
+        
     end_time = datetime.datetime.now()
 
     process_time = str(end_time - start_time)
@@ -413,12 +460,33 @@ def laplacian_processing():
     output_base_name = str(uuid.uuid4())
 
     input_temp_path = os.path.join(INPUT_FOLDER, input_base_name + suffix)
+    
+    # +++ SỬA LỖI: Thêm đường dẫn PNG chuẩn hóa +++
+    input_png_path = os.path.join(INPUT_FOLDER, input_base_name + ".png")
+    
     output_filename = output_base_name + ".png"
     output_full_path = os.path.join(OUTPUT_FOLDER, output_filename)
 
     start_time = datetime.datetime.now()
     decode_image(stripped_string, input_temp_path)
-    apply_laplacian(input_temp_path, output_full_path)
+
+    # +++ SỬA LỖI: Thêm logic mở và lưu lại bằng PIL để chuẩn hóa +++
+    try:
+        im = Image.open(input_temp_path)
+        im.save(input_png_path)
+    except PIL.UnidentifiedImageError:
+        return jsonify({"error": "Không thể xác định định dạng ảnh."}), 400
+    except Exception as e:
+        logging.error(f"Lỗi khi chuẩn hóa ảnh: {e}")
+        return jsonify({"error": f"Lỗi xử lý ảnh đầu vào: {e}"}), 500
+
+    # +++ SỬA LỖI: Gọi hàm xử lý trên file PNG đã chuẩn hóa +++
+    try:
+        apply_laplacian(input_png_path, output_full_path)
+    except ValueError as e:
+        logging.error(f"Lỗi từ apply_laplacian: {e}")
+        return jsonify({"error": f"Không thể xử lý ảnh: {e}"}), 500
+        
     end_time = datetime.datetime.now()
 
     process_time = str(end_time - start_time)
@@ -449,12 +517,33 @@ def boxfilter_processing():
     output_base_name = str(uuid.uuid4())
 
     input_temp_path = os.path.join(INPUT_FOLDER, input_base_name + suffix)
+
+    # +++ SỬA LỖI: Thêm đường dẫn PNG chuẩn hóa +++
+    input_png_path = os.path.join(INPUT_FOLDER, input_base_name + ".png")
+    
     output_filename = output_base_name + ".png"
     output_full_path = os.path.join(OUTPUT_FOLDER, output_filename)
 
     start_time = datetime.datetime.now()
     decode_image(stripped_string, input_temp_path)
-    apply_box_filter(input_temp_path, ksize, output_full_path)
+
+    # +++ SỬA LỖI: Thêm logic mở và lưu lại bằng PIL để chuẩn hóa +++
+    try:
+        im = Image.open(input_temp_path)
+        im.save(input_png_path)
+    except PIL.UnidentifiedImageError:
+        return jsonify({"error": "Không thể xác định định dạng ảnh."}), 400
+    except Exception as e:
+        logging.error(f"Lỗi khi chuẩn hóa ảnh: {e}")
+        return jsonify({"error": f"Lỗi xử lý ảnh đầu vào: {e}"}), 500
+
+    # +++ SỬA LỖI: Gọi hàm xử lý trên file PNG đã chuẩn hóa +++
+    try:
+        apply_box_filter(input_png_path, ksize, output_full_path)
+    except ValueError as e:
+        logging.error(f"Lỗi từ apply_box_filter: {e}")
+        return jsonify({"error": f"Không thể xử lý ảnh: {e}"}), 500
+        
     end_time = datetime.datetime.now()
 
     process_time = str(end_time - start_time)
@@ -471,4 +560,8 @@ if __name__ == "__main__":
         os.makedirs(INPUT_FOLDER)
     if not os.path.exists(OUTPUT_FOLDER):
         os.makedirs(OUTPUT_FOLDER)
-    app.run()
+    
+    # Bật logging để xem lỗi chi tiết hơn
+    logging.basicConfig(level=logging.INFO)
+    
+    app.run(debug=True) # Thêm debug=True để tự động reload và xem lỗi
