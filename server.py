@@ -13,12 +13,18 @@ from skimage import util
 import PIL
 # FIX: Đã sửa lại các import này để trỏ đúng vào hàm trong file,
 # thay vì import module
+from image_module.canny_edge import canny_edge
 from image_module.decode_image import decode_image
+from image_module.laplacian_edge import laplacian_edge
 from image_module.log_compression import log_compression
+from image_module.sobel_edge import sobel_edge
 from image_module.strip_image import strip_image
 from image_module.contrast_stretching import contrast_stretching
 from image_module.histogram_equalization import histogram_equalization
 from image_module.reverse_video import reverse_video
+from image_module.temperature import apply_temperature
+from image_module.laplacian import apply_laplacian
+from image_module.box_filter import apply_box_filter
 from user import create_user, already_user, add_uploadimage, add_image_hist
 from user import add_image_contrast, add_image_log, add_image_reverse
 from models import User
@@ -30,11 +36,10 @@ import time
 
 app = Flask(__name__)
 CORS(app)
-connect("mongodb://localhost:27017/image_app")
 
 
 INPUT_FOLDER = "input_images/"
-OUTPUT_FOLDER = "output_images/"  # FIX: Thêm folder output
+OUTPUT_FOLDER = "output_images/"  
 
 
 @app.route("/api/user_exists/<username>", methods=["GET"])
@@ -170,8 +175,14 @@ def histogram_equalization_processing():
 
     start_time = datetime.datetime.now()
     decode_image(stripped_image, input_temp_path)
-    im = Image.open(input_temp_path)
-    im.save(input_png_path)
+    
+    try:
+        im = Image.open(input_temp_path)
+        im.save(input_png_path)
+    except PIL.UnidentifiedImageError:
+        return jsonify({"error": "Không thể xác định định dạng ảnh."}), 400
+    except Exception as e:
+        return jsonify({"error": f"Lỗi xử lý ảnh đầu vào: {e}"}), 500
 
     # Gọi hàm xử lý với đường dẫn đầy đủ
     processed_image = histogram_equalization(input_png_path, output_full_path)
@@ -227,8 +238,14 @@ def contrast_stretching_processing():
 
     start_time = datetime.datetime.now()
     decode_image(stripped_string, input_temp_path)
-    im = Image.open(input_temp_path)
-    im.save(input_png_path)
+    
+    try:
+        im = Image.open(input_temp_path)
+        im.save(input_png_path)
+    except PIL.UnidentifiedImageError:
+        return jsonify({"error": "Không thể xác định định dạng ảnh."}), 400
+    except Exception as e:
+        return jsonify({"error": f"Lỗi xử lý ảnh đầu vào: {e}"}), 500
     
     processed_image = contrast_stretching(input_png_path, output_full_path)
     
@@ -282,8 +299,14 @@ def log_compression_processing():
 
     start_time = datetime.datetime.now()
     decode_image(stripped_string, input_temp_path)
-    im = Image.open(input_temp_path)
-    im.save(input_png_path)
+    
+    try:
+        im = Image.open(input_temp_path)
+        im.save(input_png_path)
+    except PIL.UnidentifiedImageError:
+        return jsonify({"error": "Không thể xác định định dạng ảnh."}), 400
+    except Exception as e:
+        return jsonify({"error": f"Lỗi xử lý ảnh đầu vào: {e}"}), 500
     
     processed_image = log_compression(input_png_path, output_full_path)
     
@@ -336,8 +359,14 @@ def reverse_video_processing():
     
     start_time = datetime.datetime.now()
     decode_image(stripped_string, input_temp_path)
-    im = Image.open(input_temp_path)
-    im.save(input_png_path)
+    
+    try:
+        im = Image.open(input_temp_path)
+        im.save(input_png_path)
+    except PIL.UnidentifiedImageError:
+        return jsonify({"error": "Không thể xác định định dạng ảnh."}), 400
+    except Exception as e:
+        return jsonify({"error": f"Lỗi xử lý ảnh đầu vào: {e}"}), 500
     
     processed_image = reverse_video(input_png_path, output_full_path)
     
@@ -353,10 +382,353 @@ def reverse_video_processing():
     return jsonify(processed_image), 200
 
 
+
+
+# New endpoints for temperature, laplacian, and box filter
+
+@app.route("/api/temperature", methods=["POST"])
+def temperature_processing():
+    """Thay đổi nhiệt độ màu (ấm/lạnh)"""
+    r = request.get_json()
+    try:
+        username = r["username"]
+        image_new = r["image"]
+        file_type = r["file_type"]
+        warm = r.get("warm", True)
+        intensity = int(r.get("intensity", 30))
+        assert type(image_new) is str
+    except KeyError as e:
+        return jsonify({"error": f"Thiếu key trong JSON: {e}"}), 400
+
+    stripped_string = strip_image(image_new, file_type)
+    suffix = "." + file_type
+    input_base_name = str(uuid.uuid4())
+    output_base_name = str(uuid.uuid4())
+
+    input_temp_path = os.path.join(INPUT_FOLDER, input_base_name + suffix)
+    
+    # +++ SỬA LỖI: Thêm đường dẫn PNG chuẩn hóa +++
+    input_png_path = os.path.join(INPUT_FOLDER, input_base_name + ".png")
+    
+    output_filename = output_base_name + ".png"
+    output_full_path = os.path.join(OUTPUT_FOLDER, output_filename)
+
+    start_time = datetime.datetime.now()
+    decode_image(stripped_string, input_temp_path)
+
+    # +++ SỬA LỖI: Thêm logic mở và lưu lại bằng PIL để chuẩn hóa +++
+    try:
+        im = Image.open(input_temp_path)
+        im.save(input_png_path)
+    except PIL.UnidentifiedImageError:
+        return jsonify({"error": "Không thể xác định định dạng ảnh."}), 400
+    except Exception as e:
+        # Ghi log lỗi để debug
+        logging.error(f"Lỗi khi chuẩn hóa ảnh: {e}")
+        return jsonify({"error": f"Lỗi xử lý ảnh đầu vào: {e}"}), 500
+
+    # +++ SỬA LỖI: Gọi hàm xử lý trên file PNG đã chuẩn hóa +++
+    try:
+        apply_temperature(input_png_path, intensity, warm, output_full_path)
+    except ValueError as e:
+        # Bắt lỗi từ hàm (ví dụ: cv2.imread trả về None)
+        logging.error(f"Lỗi từ apply_temperature: {e}")
+        return jsonify({"error": f"Không thể xử lý ảnh: {e}"}), 500
+        
+    end_time = datetime.datetime.now()
+
+    process_time = str(end_time - start_time)
+    return jsonify({
+        "message": "Xử lý nhiệt độ màu thành công!",
+        "file_name": output_filename,
+        "output_path": output_full_path,
+        "process_time": process_time
+    }), 200
+
+
+@app.route("/api/laplacian", methods=["POST"])
+def laplacian_processing():
+    """Làm sắc nét ảnh bằng Laplacian"""
+    r = request.get_json()
+    try:
+        username = r["username"]
+        image_new = r["image"]
+        file_type = r["file_type"]
+        assert type(image_new) is str
+    except KeyError as e:
+        return jsonify({"error": f"Thiếu key trong JSON: {e}"}), 400
+
+    stripped_string = strip_image(image_new, file_type)
+    suffix = "." + file_type
+    input_base_name = str(uuid.uuid4())
+    output_base_name = str(uuid.uuid4())
+
+    input_temp_path = os.path.join(INPUT_FOLDER, input_base_name + suffix)
+    
+    # +++ SỬA LỖI: Thêm đường dẫn PNG chuẩn hóa +++
+    input_png_path = os.path.join(INPUT_FOLDER, input_base_name + ".png")
+    
+    output_filename = output_base_name + ".png"
+    output_full_path = os.path.join(OUTPUT_FOLDER, output_filename)
+
+    start_time = datetime.datetime.now()
+    decode_image(stripped_string, input_temp_path)
+
+    # +++ SỬA LỖI: Thêm logic mở và lưu lại bằng PIL để chuẩn hóa +++
+    try:
+        im = Image.open(input_temp_path)
+        im.save(input_png_path)
+    except PIL.UnidentifiedImageError:
+        return jsonify({"error": "Không thể xác định định dạng ảnh."}), 400
+    except Exception as e:
+        logging.error(f"Lỗi khi chuẩn hóa ảnh: {e}")
+        return jsonify({"error": f"Lỗi xử lý ảnh đầu vào: {e}"}), 500
+
+    # +++ SỬA LỖI: Gọi hàm xử lý trên file PNG đã chuẩn hóa +++
+    try:
+        apply_laplacian(input_png_path, output_full_path)
+    except ValueError as e:
+        logging.error(f"Lỗi từ apply_laplacian: {e}")
+        return jsonify({"error": f"Không thể xử lý ảnh: {e}"}), 500
+        
+    end_time = datetime.datetime.now()
+
+    process_time = str(end_time - start_time)
+    return jsonify({
+        "message": "Làm sắc nét ảnh (Laplacian) thành công!",
+        "file_name": output_filename,
+        "output_path": output_full_path,
+        "process_time": process_time
+    }), 200
+
+
+@app.route("/api/box_filter", methods=["POST"])
+def boxfilter_processing():
+    """Làm mờ ảnh bằng Box Filter"""
+    r = request.get_json()
+    try:
+        username = r["username"]
+        image_new = r["image"]
+        file_type = r["file_type"]
+        ksize = int(r.get("ksize", 5))
+        assert type(image_new) is str
+    except KeyError as e:
+        return jsonify({"error": f"Thiếu key trong JSON: {e}"}), 400
+
+    stripped_string = strip_image(image_new, file_type)
+    suffix = "." + file_type
+    input_base_name = str(uuid.uuid4())
+    output_base_name = str(uuid.uuid4())
+
+    input_temp_path = os.path.join(INPUT_FOLDER, input_base_name + suffix)
+
+    # +++ SỬA LỖI: Thêm đường dẫn PNG chuẩn hóa +++
+    input_png_path = os.path.join(INPUT_FOLDER, input_base_name + ".png")
+    
+    output_filename = output_base_name + ".png"
+    output_full_path = os.path.join(OUTPUT_FOLDER, output_filename)
+
+    start_time = datetime.datetime.now()
+    decode_image(stripped_string, input_temp_path)
+
+    # +++ SỬA LỖI: Thêm logic mở và lưu lại bằng PIL để chuẩn hóa +++
+    try:
+        im = Image.open(input_temp_path)
+        im.save(input_png_path)
+    except PIL.UnidentifiedImageError:
+        return jsonify({"error": "Không thể xác định định dạng ảnh."}), 400
+    except Exception as e:
+        logging.error(f"Lỗi khi chuẩn hóa ảnh: {e}")
+        return jsonify({"error": f"Lỗi xử lý ảnh đầu vào: {e}"}), 500
+
+    # +++ SỬA LỖI: Gọi hàm xử lý trên file PNG đã chuẩn hóa +++
+    try:
+        apply_box_filter(input_png_path, ksize, output_full_path)
+    except ValueError as e:
+        logging.error(f"Lỗi từ apply_box_filter: {e}")
+        return jsonify({"error": f"Không thể xử lý ảnh: {e}"}), 500
+        
+    end_time = datetime.datetime.now()
+
+    process_time = str(end_time - start_time)
+    return jsonify({
+        "message": "Làm mờ ảnh (Box Filter) thành công!",
+        "file_name": output_filename,
+        "output_path": output_full_path,
+        "process_time": process_time
+    }), 200
+
+
+
+
+@app.route("/api/canny_edge", methods=["POST"])
+def canny_edge_processing():
+    """
+    Get the processed image with Canny Edge Detection
+    (Không lưu vào DB)
+    """
+    r = request.get_json()
+    try:
+        username = r["username"]  # Vẫn nhận username, nhưng không dùng
+        image = r["image"]
+        file_type = r["file_type"]
+        assert type(image) == str
+    except KeyError as e:
+        logging.warning("Incorrect JSON input: {}".format(e))
+        err = {"error": "Incorrect JSON input"}
+        return jsonify(err), 400
+    except AssertionError as e:
+        logging.warning("Incorrect image type given: {}".format(e))
+        err = {"error": "Incorrect image type given"}
+        return jsonify(err), 400
+    stripped_image = strip_image(image, file_type)
+
+    suffix = "." + file_type
+    input_base_name = str(uuid.uuid4())
+    output_base_name = str(uuid.uuid4())
+    input_temp_path = os.path.join(INPUT_FOLDER, input_base_name + suffix)
+    input_png_path = os.path.join(INPUT_FOLDER, input_base_name + ".png")
+    output_filename = output_base_name + ".png"
+    output_full_path = os.path.join(OUTPUT_FOLDER, output_filename)
+
+    start_time = datetime.datetime.now()
+    decode_image(stripped_image, input_temp_path)
+    im = Image.open(input_temp_path)
+    im.save(input_png_path)
+
+    # Gọi hàm xử lý Canny
+    processed_image = canny_edge(input_png_path, output_full_path)
+    
+    end_time = datetime.datetime.now()
+    process_time = str(end_time - start_time)
+
+    # Bỏ qua việc lưu vào DB
+
+    processed_image["process_time"] = process_time
+    return jsonify(processed_image), 200
+
+
+
+@app.route("/api/laplacian_edge", methods=["POST"])
+def laplacian_edge_processing():
+    """
+    Get the processed image with Laplacian Edge Detection
+    (Không lưu vào DB)
+    """
+    r = request.get_json()
+    try:
+        username = r["username"]
+        image = r["image"]
+        file_type = r["file_type"]
+        assert type(image) == str
+    except KeyError as e:
+        logging.warning("Incorrect JSON input: {}".format(e))
+        err = {"error": "Incorrect JSON input"}
+        return jsonify(err), 400
+    except AssertionError as e:
+        logging.warning("Incorrect image type given: {}".format(e))
+        err = {"error": "Incorrect image type given"}
+        return jsonify(err), 400
+    stripped_image = strip_image(image, file_type)
+
+    suffix = "." + file_type
+    input_base_name = str(uuid.uuid4())
+    output_base_name = str(uuid.uuid4())
+    input_temp_path = os.path.join(INPUT_FOLDER, input_base_name + suffix)
+    input_png_path = os.path.join(INPUT_FOLDER, input_base_name + ".png")
+    output_filename = output_base_name + ".png"
+    output_full_path = os.path.join(OUTPUT_FOLDER, output_filename)
+
+    start_time = datetime.datetime.now()
+    decode_image(stripped_image, input_temp_path)
+    im = Image.open(input_temp_path)
+    im.save(input_png_path)
+
+    # Gọi hàm xử lý Laplacian
+    processed_image = laplacian_edge(input_png_path, output_full_path)
+    
+    end_time = datetime.datetime.now()
+    process_time = str(end_time - start_time)
+
+    # Bỏ qua việc lưu vào DB
+    
+    processed_image["process_time"] = process_time
+    return jsonify(processed_image), 200
+
+
+
+
+
+@app.route("/api/sobel_edge", methods=["POST"])
+def sobel_edge_processing():
+    """
+    Get the processed image with Sobel Edge Detection
+    (Không lưu vào DB)
+    """
+    r = request.get_json()
+    try:
+        username = r["username"]
+        image = r["image"]
+        file_type = r["file_type"]
+        assert type(image) == str
+    except KeyError as e:
+        logging.warning("Incorrect JSON input: {}".format(e))
+        err = {"error": "Incorrect JSON input"}
+        return jsonify(err), 400
+    except AssertionError as e:
+        logging.warning("Incorrect image type given: {}".format(e))
+        err = {"error": "Incorrect image type given"}
+        return jsonify(err), 400
+    stripped_image = strip_image(image, file_type)
+
+    suffix = "." + file_type
+    input_base_name = str(uuid.uuid4())
+    output_base_name = str(uuid.uuid4())
+    input_temp_path = os.path.join(INPUT_FOLDER, input_base_name + suffix)
+    input_png_path = os.path.join(INPUT_FOLDER, input_base_name + ".png")
+    output_filename = output_base_name + ".png"
+    output_full_path = os.path.join(OUTPUT_FOLDER, output_filename)
+
+    start_time = datetime.datetime.now()
+    decode_image(stripped_image, input_temp_path)
+    im = Image.open(input_temp_path)
+    im.save(input_png_path)
+
+    # Gọi hàm xử lý Sobel
+    processed_image = sobel_edge(input_png_path, output_full_path)
+    
+    end_time = datetime.datetime.now()
+    process_time = str(end_time - start_time)
+
+    # Bỏ qua việc lưu vào DB
+
+    processed_image["process_time"] = process_time
+    return jsonify(processed_image), 200
+
+
+
+
+
 if __name__ == "__main__":
-    # FIX: Đảm bảo các thư mục tồn tại khi chạy
+    
+    #  Đảm bảo các thư mục tồn tại khi chạy
     if not os.path.exists(INPUT_FOLDER):
         os.makedirs(INPUT_FOLDER)
     if not os.path.exists(OUTPUT_FOLDER):
         os.makedirs(OUTPUT_FOLDER)
+    
+    print("--- CHUẨN BỊ CHẠY SERVER ---")
+    
+    try:
+        print("--- Đang kết nối tới MongoDB... ---")
+        connect("mongodb://localhost:27017/image_app")
+        print("--- Kết nối MongoDB THÀNH CÔNG ---")
+    except Exception as e:
+        print(f"!!!!!!!! LỖI KẾT NỐI MONGODB !!!!!!!!")
+        print(f"Lỗi: {e}")
+        print("Vui lòng đảm bảo MongoDB đang chạy.")
+        exit() 
+
+    print("--- Bật DEBUG MODE = ON (để xem lỗi) ---")
+    print("--- Chạy trên PORT 5000 ---")
     app.run()

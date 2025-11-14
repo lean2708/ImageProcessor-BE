@@ -1,45 +1,18 @@
-INFO:root:Writing to file input_images/ac13355c-16c9-4133-aeb3-d34a7044a75c.jpeg
-DEBUG:PIL.PngImagePlugin:STREAM b'IHDR' 16 13
-DEBUG:PIL.PngImagePlugin:STREAM b'IDAT' 41 65536
-INFO:root:Image file output_images/c1cf3bdb-fa9a-4697-83c9-15c1b1967024.png\ac13355c-16c9-4133-aeb3-d34a7044a75c_contrast_1762963365.png being read
-INFO:root:Processed image saved as ac13355c-16c9-4133-aeb3-d34a7044a75c_contrast_1762963365.png
-INFO:werkzeug:127.0.0.1 - - [12/Nov/2025 23:02:46] "POST /api/contrast_stretching HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [12/Nov/2025 23:02:47] "OPTIONS /api/histogram_equalization HTTP/1.1" 200 -
-INFO:root:Writing to file input_images/9b429d8a-2eae-422e-b1bd-61d45382d551.jpeg
-DEBUG:PIL.PngImagePlugin:STREAM b'IHDR' 16 13
-DEBUG:PIL.PngImagePlugin:STREAM b'IDAT' 41 65536
-INFO:root:Image file output_images/eeac61ae-f84a-4abb-b34b-b4c65e55ba10.png\9b429d8a-2eae-422e-b1bd-61d45382d551_1762963368.png being read
-INFO:root:Processed image saved as 9b429d8a-2eae-422e-b1bd-61d45382d551_1762963368.png
-INFO:werkzeug:127.0.0.1 - - [12/Nov/2025 23:02:49] "POST /api/histogram_equalization HTTP/1.1" 200 -
-INFO:werkzeug:127.0.0.1 - - [12/Nov/2025 23:02:50] "OPTIONS /api/log_compression HTTP/1.1" 200 -
-INFO:root:Writing to file input_images/e917e1a4-8953-4ed4-9ffd-6899630d5361.jpeg
-DEBUG:PIL.PngImagePlugin:STREAM b'IHDR' 16 13
-DEBUG:PIL.PngImagePlugin:STREAM b'IDAT' 41 65536
-ERROR:server:Exception on /api/log_compression [POST]
-Traceback (most recent call last):
-  File "C:\Users\PC\miniconda3\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
-    response = self.full_dispatch_request()
-  File "C:\Users\PC\miniconda3\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
-    rv = self.handle_user_exception(e)
-  File "C:\Users\PC\miniconda3\Lib\site-packages\flask_cors\extension.py", line 176, in wrapped_function
-    return cors_after_request(app.make_response(f(*args, **kwargs)))
-                                                ~^^^^^^^^^^^^^^^^^
-  File "C:\Users\PC\miniconda3\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "C:\Users\PC\miniconda3\Lib\site-packages\flask\app.py", line 902, in dispatch_request
-    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
-           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
-  File "D:\WorkSpace\Code\XLA\ImageProcessor-BE\server.py", line 288, in log_compression_processing
-    processed_image = log_compression(input_png_path, output_full_path)
-  File "D:\WorkSpace\Code\XLA\ImageProcessor-BE\image_module\log_compression.py", line 50, in log_compression
-    a2 = str(encode_image(output_path))
-             ~~~~~~~~~~~~^^^^^^^^^^^^^
-TypeError: 'module' object is not callable
-INFO:werkzeug:127.0.0.1 - - [12/Nov/2025 23:02:51] "[35m[1mPOST /api/log_compression HTTP/1.1[0m" 500 -
-INFO:werkzeug:127.0.0.1 - - [12/Nov/2025 23:02:52] "OPTIONS /api/reverse_video HTTP/1.1" 200 -
-INFO:root:Writing to file input_images/8b33286e-99d5-43e9-a74b-c549cf029b42.jpeg
-DEBUG:PIL.PngImagePlugin:STREAM b'IHDR' 16 13
-DEBUG:PIL.PngImagePlugin:STREAM b'IDAT' 41 65536
-INFO:root:Image file output_images/64f429dc-0ae2-488a-91ed-4b814c3eb5cc.png\8b33286e-99d5-43e9-a74b-c549cf029b42_reverse_1762963373.png being read
-INFO:root:Processed image saved as 8b33286e-99d5-43e9-a74b-c549cf029b42_reverse_1762963373.png
-INFO:werkzeug:127.0.0.1 - - [12/Nov/2025 23:02:53] "POST /api/reverse_video HTTP/1.1" 200 -
+INFO:root:Writing to file input_images/7216262e-e47e-49cc-a8fd-a073664c6b4e.png
+INFO:werkzeug:127.0.0.1 - - [14/Nov/2025 08:51:20] "POST /api/temperature HTTP/1.1" 200 -
+INFO:root:Writing to file input_images/0cbaf281-b331-4d6c-9acb-8086d6d3347f.png
+INFO:werkzeug:127.0.0.1 - - [14/Nov/2025 08:51:35] "POST /api/laplacian HTTP/1.1" 200 -
+INFO:root:Writing to file input_images/2b54fdbf-5975-4565-80a7-8bb64102997c.png
+INFO:werkzeug:127.0.0.1 - - [14/Nov/2025 08:51:44] "POST /api/box_filter HTTP/1.1" 200 -
+INFO:root:Writing to file input_images/fc59f3ec-4b99-4ae2-9610-b93d0ad302bb.png
+INFO:root:Image file output_images/bbc48877-c735-4161-aef1-8075027229e9.png being read
+INFO:root:B\u1ed9 l\u1ecdc Laplacian thành công cho input_images/fc59f3ec-4b99-4ae2-9610-b93d0ad302bb.png
+INFO:werkzeug:127.0.0.1 - - [14/Nov/2025 08:53:24] "POST /api/laplacian_edge HTTP/1.1" 200 -
+INFO:root:Writing to file input_images/19c49260-38c1-4e7b-aca3-74844fc5e672.png
+INFO:root:Image file output_images/5bfbf966-c82b-43da-8248-7aa9cf868abb.png being read
+INFO:root:Phát hi\u1ec7n c\u1ea1nh Canny thành công cho input_images/19c49260-38c1-4e7b-aca3-74844fc5e672.png
+INFO:werkzeug:127.0.0.1 - - [14/Nov/2025 08:53:33] "POST /api/canny_edge HTTP/1.1" 200 -
+INFO:root:Writing to file input_images/37a29e2d-47c9-4dc6-ba0b-02bfd655cb84.png
+INFO:root:Image file output_images/c679fb7b-4fa6-4c7f-9880-f93ef9f468f1.png being read
+INFO:root:B\u1ed9 l\u1ecdc Sobel thành công cho input_images/37a29e2d-47c9-4dc6-ba0b-02bfd655cb84.png
+INFO:werkzeug:127.0.0.1 - - [14/Nov/2025 08:53:44] "POST /api/sobel_edge HTTP/1.1" 200 -
