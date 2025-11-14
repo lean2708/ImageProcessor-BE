@@ -384,35 +384,6 @@ def reverse_video_processing():
 
 
 
-@app.route("/api/canny_edge", methods=["POST"])
-def canny_edge_processing():
-    """
-    Get the processed image with Canny Edge Detection
-    (Không lưu vào DB)
-    """
-    r = request.get_json()
-    try:
-        username = r["username"]  # Vẫn nhận username, nhưng không dùng
-        image = r["image"]
-        file_type = r["file_type"]
-        assert type(image) == str
-    except KeyError as e:
-        logging.warning("Incorrect JSON input: {}".format(e))
-        err = {"error": "Incorrect JSON input"}
-        return jsonify(err), 400
-    except AssertionError as e:
-        logging.warning("Incorrect image type given: {}".format(e))
-        err = {"error": "Incorrect image type given"}
-        return jsonify(err), 400
-    stripped_image = strip_image(image, file_type)
-
-    suffix = "." + file_type
-    input_base_name = str(uuid.uuid4())
-    output_base_name = str(uuid.uuid4())
-    input_temp_path = os.path.join(INPUT_FOLDER, input_base_name + suffix)
-    input_png_path = os.path.join(INPUT_FOLDER, input_base_name + ".png")
-
-    
 # New endpoints for temperature, laplacian, and box filter
 
 @app.route("/api/temperature", methods=["POST"])
@@ -475,8 +446,6 @@ def temperature_processing():
     }), 200
 
 
-
-
 @app.route("/api/laplacian", methods=["POST"])
 def laplacian_processing():
     """Làm sắc nét ảnh bằng Laplacian"""
@@ -531,17 +500,17 @@ def laplacian_processing():
         "output_path": output_full_path,
         "process_time": process_time
     }), 200
-  
-  
-  
-  @app.route("/api/laplacian", methods=["POST"])
-def laplacian_processing():
-    """Làm sắc nét ảnh bằng Laplacian"""
+
+
+@app.route("/api/box_filter", methods=["POST"])
+def boxfilter_processing():
+    """Làm mờ ảnh bằng Box Filter"""
     r = request.get_json()
     try:
         username = r["username"]
         image_new = r["image"]
         file_type = r["file_type"]
+        ksize = int(r.get("ksize", 5))
         assert type(image_new) is str
     except KeyError as e:
         return jsonify({"error": f"Thiếu key trong JSON: {e}"}), 400
@@ -552,7 +521,7 @@ def laplacian_processing():
     output_base_name = str(uuid.uuid4())
 
     input_temp_path = os.path.join(INPUT_FOLDER, input_base_name + suffix)
-    
+
     # +++ SỬA LỖI: Thêm đường dẫn PNG chuẩn hóa +++
     input_png_path = os.path.join(INPUT_FOLDER, input_base_name + ".png")
     
@@ -574,24 +543,24 @@ def laplacian_processing():
 
     # +++ SỬA LỖI: Gọi hàm xử lý trên file PNG đã chuẩn hóa +++
     try:
-        apply_laplacian(input_png_path, output_full_path)
+        apply_box_filter(input_png_path, ksize, output_full_path)
     except ValueError as e:
-        logging.error(f"Lỗi từ apply_laplacian: {e}")
+        logging.error(f"Lỗi từ apply_box_filter: {e}")
         return jsonify({"error": f"Không thể xử lý ảnh: {e}"}), 500
         
     end_time = datetime.datetime.now()
 
     process_time = str(end_time - start_time)
     return jsonify({
-        "message": "Làm sắc nét ảnh (Laplacian) thành công!",
+        "message": "Làm mờ ảnh (Box Filter) thành công!",
         "file_name": output_filename,
         "output_path": output_full_path,
         "process_time": process_time
     }), 200
-  
-  
-# New endpoints for Canny, Laplacian Edge, Sobel Edge
-  
+
+
+
+
 @app.route("/api/canny_edge", methods=["POST"])
 def canny_edge_processing():
     """
@@ -637,9 +606,10 @@ def canny_edge_processing():
 
     processed_image["process_time"] = process_time
     return jsonify(processed_image), 200
-  
-  
-  @app.route("/api/laplacian_edge", methods=["POST"])
+
+
+
+@app.route("/api/laplacian_edge", methods=["POST"])
 def laplacian_edge_processing():
     """
     Get the processed image with Laplacian Edge Detection
@@ -734,9 +704,10 @@ def sobel_edge_processing():
 
     processed_image["process_time"] = process_time
     return jsonify(processed_image), 200
-  
-  
-  
+
+
+
+
 
 if __name__ == "__main__":
     
