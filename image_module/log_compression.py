@@ -1,4 +1,4 @@
-from image_module import encode_image
+from image_module.encode_image import encode_image
 
 
 def log_compression(id1, output_folder="output_images/"):

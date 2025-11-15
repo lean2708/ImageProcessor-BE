@@ -261,7 +261,6 @@ def contrast_stretching_processing():
     processed_image["process_time"] = process_time
     return jsonify(processed_image), 200
 
-
 @app.route("/api/log_compression", methods=["POST"])
 def log_compression_processing():
     """
@@ -406,44 +405,55 @@ def temperature_processing():
     output_base_name = str(uuid.uuid4())
 
     input_temp_path = os.path.join(INPUT_FOLDER, input_base_name + suffix)
-    
-    # +++ SỬA LỖI: Thêm đường dẫn PNG chuẩn hóa +++
     input_png_path = os.path.join(INPUT_FOLDER, input_base_name + ".png")
-    
     output_filename = output_base_name + ".png"
     output_full_path = os.path.join(OUTPUT_FOLDER, output_filename)
 
     start_time = datetime.datetime.now()
     decode_image(stripped_string, input_temp_path)
 
-    # +++ SỬA LỖI: Thêm logic mở và lưu lại bằng PIL để chuẩn hóa +++
     try:
         im = Image.open(input_temp_path)
         im.save(input_png_path)
     except PIL.UnidentifiedImageError:
         return jsonify({"error": "Không thể xác định định dạng ảnh."}), 400
     except Exception as e:
-        # Ghi log lỗi để debug
         logging.error(f"Lỗi khi chuẩn hóa ảnh: {e}")
         return jsonify({"error": f"Lỗi xử lý ảnh đầu vào: {e}"}), 500
 
-    # +++ SỬA LỖI: Gọi hàm xử lý trên file PNG đã chuẩn hóa +++
     try:
+        # 1. Gọi hàm xử lý
         apply_temperature(input_png_path, intensity, warm, output_full_path)
+
+        # 2. Đọc file, encode, và tạo dict trả về
+        im_processed = Image.open(output_full_path)
+        width, height = im_processed.size
+        im_size = [width, height]
+
+        with open(output_full_path, "rb") as image_file:
+            b64_string = base64.b64encode(image_file.read())
+
+        processed_image = {
+            "base64": str(b64_string),
+            "image_size": im_size,
+            "file_name": output_filename,
+        }
+
+        end_time = datetime.datetime.now()
+        process_time = str(end_time - start_time)
+        processed_image["process_time"] = process_time
+
+        # (Thêm logic đếm process_count nếu muốn)
+
+        # 3. Trả về JSON đúng chuẩn
+        return jsonify(processed_image), 200
+
     except ValueError as e:
-        # Bắt lỗi từ hàm (ví dụ: cv2.imread trả về None)
         logging.error(f"Lỗi từ apply_temperature: {e}")
         return jsonify({"error": f"Không thể xử lý ảnh: {e}"}), 500
-        
-    end_time = datetime.datetime.now()
-
-    process_time = str(end_time - start_time)
-    return jsonify({
-        "message": "Xử lý nhiệt độ màu thành công!",
-        "file_name": output_filename,
-        "output_path": output_full_path,
-        "process_time": process_time
-    }), 200
+    except Exception as e:
+        logging.error(f"Lỗi khi đọc/encode file output: {e}")
+        return jsonify({"error": f"Lỗi encode file xử lý: {e}"}), 500
 
 
 @app.route("/api/laplacian", methods=["POST"])
@@ -464,17 +474,13 @@ def laplacian_processing():
     output_base_name = str(uuid.uuid4())
 
     input_temp_path = os.path.join(INPUT_FOLDER, input_base_name + suffix)
-    
-    # +++ SỬA LỖI: Thêm đường dẫn PNG chuẩn hóa +++
     input_png_path = os.path.join(INPUT_FOLDER, input_base_name + ".png")
-    
     output_filename = output_base_name + ".png"
     output_full_path = os.path.join(OUTPUT_FOLDER, output_filename)
 
     start_time = datetime.datetime.now()
     decode_image(stripped_string, input_temp_path)
 
-    # +++ SỬA LỖI: Thêm logic mở và lưu lại bằng PIL để chuẩn hóa +++
     try:
         im = Image.open(input_temp_path)
         im.save(input_png_path)
@@ -484,22 +490,39 @@ def laplacian_processing():
         logging.error(f"Lỗi khi chuẩn hóa ảnh: {e}")
         return jsonify({"error": f"Lỗi xử lý ảnh đầu vào: {e}"}), 500
 
-    # +++ SỬA LỖI: Gọi hàm xử lý trên file PNG đã chuẩn hóa +++
     try:
+        # 1. Gọi hàm xử lý
         apply_laplacian(input_png_path, output_full_path)
+
+        # 2. Đọc file, encode, và tạo dict trả về
+        im_processed = Image.open(output_full_path)
+        width, height = im_processed.size
+        im_size = [width, height]
+
+        with open(output_full_path, "rb") as image_file:
+            b64_string = base64.b64encode(image_file.read())
+
+        processed_image = {
+            "base64": str(b64_string),
+            "image_size": im_size,
+            "file_name": output_filename,
+        }
+
+        end_time = datetime.datetime.now()
+        process_time = str(end_time - start_time)
+        processed_image["process_time"] = process_time
+
+        # (Thêm logic đếm process_count nếu muốn)
+
+        # 3. Trả về JSON đúng chuẩn
+        return jsonify(processed_image), 200
+
     except ValueError as e:
         logging.error(f"Lỗi từ apply_laplacian: {e}")
         return jsonify({"error": f"Không thể xử lý ảnh: {e}"}), 500
-        
-    end_time = datetime.datetime.now()
-
-    process_time = str(end_time - start_time)
-    return jsonify({
-        "message": "Làm sắc nét ảnh (Laplacian) thành công!",
-        "file_name": output_filename,
-        "output_path": output_full_path,
-        "process_time": process_time
-    }), 200
+    except Exception as e:
+        logging.error(f"Lỗi khi đọc/encode file output: {e}")
+        return jsonify({"error": f"Lỗi encode file xử lý: {e}"}), 500
 
 
 @app.route("/api/box_filter", methods=["POST"])
@@ -519,19 +542,14 @@ def boxfilter_processing():
     suffix = "." + file_type
     input_base_name = str(uuid.uuid4())
     output_base_name = str(uuid.uuid4())
-
     input_temp_path = os.path.join(INPUT_FOLDER, input_base_name + suffix)
-
-    # +++ SỬA LỖI: Thêm đường dẫn PNG chuẩn hóa +++
     input_png_path = os.path.join(INPUT_FOLDER, input_base_name + ".png")
-    
     output_filename = output_base_name + ".png"
     output_full_path = os.path.join(OUTPUT_FOLDER, output_filename)
 
     start_time = datetime.datetime.now()
     decode_image(stripped_string, input_temp_path)
 
-    # +++ SỬA LỖI: Thêm logic mở và lưu lại bằng PIL để chuẩn hóa +++
     try:
         im = Image.open(input_temp_path)
         im.save(input_png_path)
@@ -541,22 +559,39 @@ def boxfilter_processing():
         logging.error(f"Lỗi khi chuẩn hóa ảnh: {e}")
         return jsonify({"error": f"Lỗi xử lý ảnh đầu vào: {e}"}), 500
 
-    # +++ SỬA LỖI: Gọi hàm xử lý trên file PNG đã chuẩn hóa +++
     try:
+        # 1. Gọi hàm xử lý
         apply_box_filter(input_png_path, ksize, output_full_path)
+
+        # 2. Đọc file, encode, và tạo dict trả về
+        im_processed = Image.open(output_full_path)
+        width, height = im_processed.size
+        im_size = [width, height]
+
+        with open(output_full_path, "rb") as image_file:
+            b64_string = base64.b64encode(image_file.read())
+
+        processed_image = {
+            "base64": str(b64_string),
+            "image_size": im_size,
+            "file_name": output_filename,
+        }
+
+        end_time = datetime.datetime.now()
+        process_time = str(end_time - start_time)
+        processed_image["process_time"] = process_time
+        
+        # (Thêm logic đếm process_count nếu muốn)
+
+        # 3. Trả về JSON đúng chuẩn
+        return jsonify(processed_image), 200
+
     except ValueError as e:
         logging.error(f"Lỗi từ apply_box_filter: {e}")
         return jsonify({"error": f"Không thể xử lý ảnh: {e}"}), 500
-        
-    end_time = datetime.datetime.now()
-
-    process_time = str(end_time - start_time)
-    return jsonify({
-        "message": "Làm mờ ảnh (Box Filter) thành công!",
-        "file_name": output_filename,
-        "output_path": output_full_path,
-        "process_time": process_time
-    }), 200
+    except Exception as e:
+        logging.error(f"Lỗi khi đọc/encode file output: {e}")
+        return jsonify({"error": f"Lỗi encode file xử lý: {e}"}), 500
 
 
 
@@ -731,4 +766,4 @@ if __name__ == "__main__":
 
     print("--- Bật DEBUG MODE = ON (để xem lỗi) ---")
     print("--- Chạy trên PORT 5000 ---")
-    app.run()
+    app.run(debug=True)
