@@ -1,18 +1,79 @@
-INFO:root:Writing to file input_images/7216262e-e47e-49cc-a8fd-a073664c6b4e.png
-INFO:werkzeug:127.0.0.1 - - [14/Nov/2025 08:51:20] "POST /api/temperature HTTP/1.1" 200 -
-INFO:root:Writing to file input_images/0cbaf281-b331-4d6c-9acb-8086d6d3347f.png
-INFO:werkzeug:127.0.0.1 - - [14/Nov/2025 08:51:35] "POST /api/laplacian HTTP/1.1" 200 -
-INFO:root:Writing to file input_images/2b54fdbf-5975-4565-80a7-8bb64102997c.png
-INFO:werkzeug:127.0.0.1 - - [14/Nov/2025 08:51:44] "POST /api/box_filter HTTP/1.1" 200 -
-INFO:root:Writing to file input_images/fc59f3ec-4b99-4ae2-9610-b93d0ad302bb.png
-INFO:root:Image file output_images/bbc48877-c735-4161-aef1-8075027229e9.png being read
-INFO:root:B\u1ed9 l\u1ecdc Laplacian thành công cho input_images/fc59f3ec-4b99-4ae2-9610-b93d0ad302bb.png
-INFO:werkzeug:127.0.0.1 - - [14/Nov/2025 08:53:24] "POST /api/laplacian_edge HTTP/1.1" 200 -
-INFO:root:Writing to file input_images/19c49260-38c1-4e7b-aca3-74844fc5e672.png
-INFO:root:Image file output_images/5bfbf966-c82b-43da-8248-7aa9cf868abb.png being read
-INFO:root:Phát hi\u1ec7n c\u1ea1nh Canny thành công cho input_images/19c49260-38c1-4e7b-aca3-74844fc5e672.png
-INFO:werkzeug:127.0.0.1 - - [14/Nov/2025 08:53:33] "POST /api/canny_edge HTTP/1.1" 200 -
-INFO:root:Writing to file input_images/37a29e2d-47c9-4dc6-ba0b-02bfd655cb84.png
-INFO:root:Image file output_images/c679fb7b-4fa6-4c7f-9880-f93ef9f468f1.png being read
-INFO:root:B\u1ed9 l\u1ecdc Sobel thành công cho input_images/37a29e2d-47c9-4dc6-ba0b-02bfd655cb84.png
-INFO:werkzeug:127.0.0.1 - - [14/Nov/2025 08:53:44] "POST /api/sobel_edge HTTP/1.1" 200 -
+INFO:root:Writing to file input_images/817deb2f-f8c9-491d-8c12-b247055e8433.jpeg
+DEBUG:PIL.PngImagePlugin:STREAM b'IHDR' 16 13
+DEBUG:PIL.PngImagePlugin:STREAM b'iCCP' 41 260
+DEBUG:PIL.PngImagePlugin:iCCP profile name b'ICC Profile'
+DEBUG:PIL.PngImagePlugin:Compression method 0
+DEBUG:PIL.PngImagePlugin:STREAM b'IDAT' 313 65536
+INFO:root:Image file output_images/b6644b45-cc12-4b9b-94b7-bcdb56c2420c.png\817deb2f-f8c9-491d-8c12-b247055e8433_log_1763193360.png being read
+INFO:root:Processed image saved as 817deb2f-f8c9-491d-8c12-b247055e8433_log_1763193360.png
+INFO:werkzeug:127.0.0.1 - - [15/Nov/2025 14:56:00] "POST /api/log_compression HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Nov/2025 14:56:03] "OPTIONS /api/laplacian HTTP/1.1" 200 -
+INFO:root:Writing to file input_images/6cf13a72-ce38-4558-ba64-42d7205f7a61.jpeg
+DEBUG:PIL.PngImagePlugin:STREAM b'IHDR' 16 13
+DEBUG:PIL.PngImagePlugin:STREAM b'IDAT' 41 8192
+INFO:werkzeug:127.0.0.1 - - [15/Nov/2025 14:56:04] "POST /api/laplacian HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Nov/2025 14:56:09] "OPTIONS /api/histogram_equalization HTTP/1.1" 200 -
+INFO:root:Writing to file input_images/208056ae-8763-4124-8aae-4137c6c865d1.jpeg
+DEBUG:PIL.PngImagePlugin:STREAM b'IHDR' 16 13
+DEBUG:PIL.PngImagePlugin:STREAM b'iCCP' 41 260
+DEBUG:PIL.PngImagePlugin:iCCP profile name b'ICC Profile'
+DEBUG:PIL.PngImagePlugin:Compression method 0
+DEBUG:PIL.PngImagePlugin:STREAM b'IDAT' 313 65536
+INFO:root:Image file output_images/60cdd554-dbe7-4eca-bc79-63175e97a37b.png\208056ae-8763-4124-8aae-4137c6c865d1_1763193370.png being read
+INFO:root:Processed image saved as 208056ae-8763-4124-8aae-4137c6c865d1_1763193370.png
+INFO:werkzeug:127.0.0.1 - - [15/Nov/2025 14:56:11] "POST /api/histogram_equalization HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Nov/2025 14:56:11] "OPTIONS /api/contrast_stretching HTTP/1.1" 200 -
+INFO:root:Writing to file input_images/999b441a-80cb-471f-9fb6-86635e369ce6.jpeg
+DEBUG:PIL.PngImagePlugin:STREAM b'IHDR' 16 13
+DEBUG:PIL.PngImagePlugin:STREAM b'iCCP' 41 260
+DEBUG:PIL.PngImagePlugin:iCCP profile name b'ICC Profile'
+DEBUG:PIL.PngImagePlugin:Compression method 0
+DEBUG:PIL.PngImagePlugin:STREAM b'IDAT' 313 65536
+INFO:root:Image file output_images/6030a93f-58ca-46fe-a5f8-e5e2686c8f28.png\999b441a-80cb-471f-9fb6-86635e369ce6_contrast_1763193372.png being read
+INFO:root:Processed image saved as 999b441a-80cb-471f-9fb6-86635e369ce6_contrast_1763193372.png
+INFO:werkzeug:127.0.0.1 - - [15/Nov/2025 14:56:12] "POST /api/contrast_stretching HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Nov/2025 14:56:13] "OPTIONS /api/log_compression HTTP/1.1" 200 -
+INFO:root:Writing to file input_images/4f14400e-c195-4e10-ae62-736a64d05397.jpeg
+DEBUG:PIL.PngImagePlugin:STREAM b'IHDR' 16 13
+DEBUG:PIL.PngImagePlugin:STREAM b'iCCP' 41 260
+DEBUG:PIL.PngImagePlugin:iCCP profile name b'ICC Profile'
+DEBUG:PIL.PngImagePlugin:Compression method 0
+DEBUG:PIL.PngImagePlugin:STREAM b'IDAT' 313 65536
+INFO:root:Image file output_images/345851cb-15d3-4569-b843-136ce97da36e.png\4f14400e-c195-4e10-ae62-736a64d05397_log_1763193374.png being read
+INFO:root:Processed image saved as 4f14400e-c195-4e10-ae62-736a64d05397_log_1763193374.png
+INFO:werkzeug:127.0.0.1 - - [15/Nov/2025 14:56:14] "POST /api/log_compression HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Nov/2025 14:56:15] "OPTIONS /api/reverse_video HTTP/1.1" 200 -
+INFO:root:Writing to file input_images/e6fbc88c-e4cf-4095-9f23-7b275d5c3b2b.jpeg
+DEBUG:PIL.PngImagePlugin:STREAM b'IHDR' 16 13
+DEBUG:PIL.PngImagePlugin:STREAM b'iCCP' 41 260
+DEBUG:PIL.PngImagePlugin:iCCP profile name b'ICC Profile'
+DEBUG:PIL.PngImagePlugin:Compression method 0
+DEBUG:PIL.PngImagePlugin:STREAM b'IDAT' 313 65536
+INFO:root:Image file output_images/8e5bbe0b-5fe3-4455-8f07-e087524052a6.png\e6fbc88c-e4cf-4095-9f23-7b275d5c3b2b_reverse_1763193375.png being read
+INFO:root:Processed image saved as e6fbc88c-e4cf-4095-9f23-7b275d5c3b2b_reverse_1763193375.png
+INFO:werkzeug:127.0.0.1 - - [15/Nov/2025 14:56:16] "POST /api/reverse_video HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Nov/2025 14:56:17] "OPTIONS /api/box_filter HTTP/1.1" 200 -
+INFO:root:Writing to file input_images/1e3e0f3e-1101-408b-9c7e-f95bce4197c7.jpeg
+DEBUG:PIL.PngImagePlugin:STREAM b'IHDR' 16 13
+DEBUG:PIL.PngImagePlugin:STREAM b'IDAT' 41 8192
+INFO:werkzeug:127.0.0.1 - - [15/Nov/2025 14:56:17] "POST /api/box_filter HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Nov/2025 14:56:20] "OPTIONS /api/laplacian_edge HTTP/1.1" 200 -
+INFO:root:Writing to file input_images/22915ac3-cc13-41da-814d-f92a7a1f1869.jpeg
+INFO:werkzeug:127.0.0.1 - - [15/Nov/2025 14:56:20] "OPTIONS /api/sobel_edge HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Nov/2025 14:56:20] "OPTIONS /api/canny_edge HTTP/1.1" 200 -
+INFO:root:Writing to file input_images/52bd5e40-f2ea-42d9-b2ea-fac98b7821fe.jpeg
+INFO:root:Writing to file input_images/ac285759-fc69-4741-bfdc-8811ec0162a9.jpeg
+INFO:root:Image file output_images/de4e0c48-e876-49de-a63f-0881eb78a7b2.png being read
+INFO:root:B\u1ed9 l\u1ecdc Laplacian thành công cho input_images/22915ac3-cc13-41da-814d-f92a7a1f1869.png
+INFO:werkzeug:127.0.0.1 - - [15/Nov/2025 14:56:21] "POST /api/laplacian_edge HTTP/1.1" 200 -
+INFO:root:Image file output_images/7b82699c-c075-4ee6-a473-d78ac1a9f03c.png being read
+INFO:root:Phát hi\u1ec7n c\u1ea1nh Canny thành công cho input_images/ac285759-fc69-4741-bfdc-8811ec0162a9.png
+INFO:werkzeug:127.0.0.1 - - [15/Nov/2025 14:56:21] "POST /api/canny_edge HTTP/1.1" 200 -
+INFO:root:Image file output_images/37e77967-3f3f-4270-918d-21c4ec54a31e.png being read
+INFO:root:B\u1ed9 l\u1ecdc Sobel thành công cho input_images/52bd5e40-f2ea-42d9-b2ea-fac98b7821fe.png
+INFO:werkzeug:127.0.0.1 - - [15/Nov/2025 14:56:21] "POST /api/sobel_edge HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [15/Nov/2025 14:56:22] "OPTIONS /api/temperature HTTP/1.1" 200 -
+INFO:root:Writing to file input_images/c8e9b7b4-6b5a-4bc0-a9bf-feef2f99aaf6.jpeg
+DEBUG:PIL.PngImagePlugin:STREAM b'IHDR' 16 13
+DEBUG:PIL.PngImagePlugin:STREAM b'IDAT' 41 8192
+INFO:werkzeug:127.0.0.1 - - [15/Nov/2025 14:56:23] "POST /api/temperature HTTP/1.1" 200 -
